@@ -211,9 +211,60 @@ new MenuCard(
     ".menu .container"
 ).render();
 
+//forms
+
+//Forms
+
+const forms = document.querySelectorAll('form');
+const message = {
+    loading: 'Загрузка',
+    success: 'Спасибо, скоро мы с вами свяжемся',
+    failure: 'Что-то пошло не так'
+};
+
+forms.forEach(item =>{
+    postData(item);
+});
+
+function postData(form) {
+    form.addEventListener('submit', (e) =>{
+        e.preventDefault();
+
+        const statusMassage = document.createElement('div');
+        statusMassage.classList.add('status');
+        statusMassage.textContent = message.loading;
+        form.append(statusMassage);
 
 
+        const r = new XMLHttpRequest();
+        r.open('POST', 'server.php');
 
+        r.setRequestHeader('Content-type', 'appliacation/json');
+        const formData = new FormData(form);
+
+            // formData to object
+        const object= {}; 
+        formData.forEach(function(value,key){
+            object[key] = value;
+        });
+            //object to JSON
+        const json = JSON.stringify(object);
+
+        r.send(json);
+        r.addEventListener('load', ()=> {
+            if (r.status === 200){
+                console.log(r.response);
+                statusMassage.textContent = message.success;
+                form.reset();
+                setTimeout(()=>{
+                    statusMassage.remove();
+                },2000);
+            } else {
+                statusMassage.textContent = message.failure;
+            }
+        });
+    });
+}
 
 
 });
