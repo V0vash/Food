@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     function hideTabContent(){
         tabsContent.forEach(item =>{
-            item.style.display = 'none';
+            item.classList.add('hide');
+            item.classList.remove('show');
         });
         tabs.forEach(item =>{
             item.classList.remove('tabheader__item_active');
@@ -16,7 +17,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
 
     function showTabContent(i = 0){
-        tabsContent[i].style.display= 'block';
+        tabsContent[i].classList.add('show');
+        tabsContent[i].classList.remove('hide');
         tabs[i].classList.add('tabheader__item_active');
     }
 
@@ -96,19 +98,20 @@ document.addEventListener('DOMContentLoaded', ()=>{
     //modal
 
     const modalTrigger = document.querySelectorAll('[data-modal]'),
-        modal = document.querySelector('.modal'),
-        modalClose = document.querySelector('[data-close]');
+        modal = document.querySelector('.modal');
 
     console.log(modalTrigger, modal);
 
     function showModal() {
-        modal.style.display = 'block';
+        modal.classList.add('show');
+        modal.classList.remove('hide');
         document.body.style.overflow = 'hidden';
         clearInterval(modalTimerId);
     }
 
     function closeModal() {
-        modal.style.display = 'none';
+        modal.classList.add('hide');
+        modal.classList.remove('show');
         document.body.style.overflow = '';
     }
 
@@ -117,16 +120,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
 
 
-    modalClose.addEventListener('click', closeModal);
 
     modal.addEventListener('click', (e) => {
-        if(e.target === modal){
+        //using || for all modals (ty message)
+        if(e.target === modal || e.target.getAttribute('data-close') == ''){
             closeModal();
         }
         });
 
     document.addEventListener('keydown', (e) =>{
-        if(e.code === "Escape" && modal.style.display === 'block'){
+        if(e.code === "Escape" && modal.classList.contains === 'show'){
             closeModal();
         }
     });
@@ -217,7 +220,7 @@ new MenuCard(
 
 const forms = document.querySelectorAll('form');
 const message = {
-    loading: 'Загрузка',
+    loading: 'img/forms/spinner.svg',
     success: 'Спасибо, скоро мы с вами свяжемся',
     failure: 'Что-то пошло не так'
 };
@@ -229,12 +232,12 @@ forms.forEach(item =>{
 function postData(form) {
     form.addEventListener('submit', (e) =>{
         e.preventDefault();
-
-        const statusMassage = document.createElement('div');
-        statusMassage.classList.add('status');
-        statusMassage.textContent = message.loading;
-        form.append(statusMassage);
-
+        
+        const statusMessage = document.createElement('img');
+        statusMessage.src = message.loading;
+        statusMessage.style.cssText = `display: block;
+        margin: 0 auto;`;
+        form.insertAdjacentElement('afterend', statusMessage);
 
         const r = new XMLHttpRequest();
         r.open('POST', 'server.php');
@@ -254,17 +257,36 @@ function postData(form) {
         r.addEventListener('load', ()=> {
             if (r.status === 200){
                 console.log(r.response);
-                statusMassage.textContent = message.success;
+                showModalTy(message.success);
                 form.reset();
-                setTimeout(()=>{
-                    statusMassage.remove();
-                },2000);
+                statusMessage.remove();
             } else {
-                statusMassage.textContent = message.failure;
+                showModalTy(message.failure);
             }
         });
     });
 }
+function showModalTy(message){
+    const prevModal = document.querySelector('.modal__dialog');
 
+    prevModal.classList.add('hide');
+    showModal();
+
+    const thanksModal = document.createElement('div');
+    thanksModal.classList.add('modal__dialog');
+    thanksModal.innerHTML = `<div class="modal__content">
+        <div data-close class="modal__close">&times;</div>
+        <div class="modal__title">${message}</div>
+        </div>`;
+
+document.querySelector('.modal').append(thanksModal);
+
+setTimeout(()=>{
+    thanksModal.remove();
+    prevModal.classList.remove('hide');
+    prevModal.classList.add('show');
+    closeModal();
+},4000);
+}
 
 });
