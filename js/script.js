@@ -239,31 +239,34 @@ function postData(form) {
         margin: 0 auto;`;
         form.insertAdjacentElement('afterend', statusMessage);
 
-        const r = new XMLHttpRequest();
-        r.open('POST', 'server.php');
-
-        r.setRequestHeader('Content-type', 'appliacation/json');
+        //fetch
         const formData = new FormData(form);
 
-            // formData to object
-        const object= {}; 
+        const object = {};
         formData.forEach(function(value,key){
-            object[key] = value;
+            object[key] = value; 
         });
-            //object to JSON
-        const json = JSON.stringify(object);
 
-        r.send(json);
-        r.addEventListener('load', ()=> {
-            if (r.status === 200){
-                console.log(r.response);
-                showModalTy(message.success);
-                form.reset();
-                statusMessage.remove();
-            } else {
-                showModalTy(message.failure);
-            }
+        fetch('server.php',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(object)
+        })
+        .then(data => data.text())
+        .then(data => {
+            console.log(data);
+            showModalTy(message.success);
+            statusMessage.remove();
+        })
+        .catch(() =>{
+            showModalTy(message.failure);
+        })
+        .finally(()=>{
+            form.reset();
         });
+
     });
 }
 function showModalTy(message){
