@@ -184,37 +184,52 @@ class MenuCard {
     }
 }
 
-new MenuCard(
-    "img/tabs/post.jpg",
-    "post",
-    "ПОСТНОЕ",
-    "test",
-    12,
-    ".menu .container",
-    "menu__item",
-    "large"
-).render();
+const getResource = async (url) => {
+    const res = await fetch(url);
+    if(!res.ok ){
+        throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+    }
+
+    return await res.json();
+}
+
+getResource('http://localhost:3000/menu')
+.then(data =>{
+    data.forEach(({img, altimg, title, descr, price}) =>{
+        new MenuCard(img, altimg, title, descr, price,".menu .container").render();
+    });
+});
+
+// new MenuCard(
+//     "img/tabs/post.jpg",
+//     "post",
+//     "ПОСТНОЕ",
+//     "test",
+//     12,
+//     ".menu .container",
+//     "menu__item",
+//     "large"
+// ).render();
 
 
-new MenuCard(
-    "img/tabs/elite.jpg",
-    "elite",
-    "elite",
-    "test",
-    16,
-    ".menu .container",
-).render();
+// new MenuCard(
+//     "img/tabs/elite.jpg",
+//     "elite",
+//     "elite",
+//     "test",
+//     16,
+//     ".menu .container",
+// ).render();
 
-new MenuCard(
-    "img/tabs/vegy.jpg",
-    "vegy",
-    "vegy",
-    "test",
-    19,
-    ".menu .container"
-).render();
-
-//forms
+// new MenuCard(
+//     "img/tabs/vegy.jpg",
+//     "vegy",
+//     "vegy",
+//     "test",
+//     19,
+//     ".menu .container"
+// ).render();
+ 
 
 //Forms
 
@@ -226,10 +241,22 @@ const message = {
 };
 
 forms.forEach(item =>{
-    postData(item);
+    bindPostData(item);
 });
 
-function postData(form) {
+const postData = async (url, data) => {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+          },
+        body: data
+    });
+
+    return await res.json();
+};
+
+function bindPostData(form) {
     form.addEventListener('submit', (e) =>{
         e.preventDefault();
         
@@ -239,22 +266,11 @@ function postData(form) {
         margin: 0 auto;`;
         form.insertAdjacentElement('afterend', statusMessage);
 
-        //fetch
         const formData = new FormData(form);
 
-        const object = {};
-        formData.forEach(function(value,key){
-            object[key] = value; 
-        });
+        const json = JSON.stringify(Object.fromEntries(formData.entries()))
 
-        fetch('server.php',{
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-              },
-            body: JSON.stringify(object)
-        })
-        .then(data => data.text())
+        postData('http://localhost:3000/requests', json)
         .then(data => {
             console.log(data);
             showModalTy(message.success);
@@ -291,5 +307,7 @@ setTimeout(()=>{
     closeModal();
 },4000);
 }
+
+
 
 });
