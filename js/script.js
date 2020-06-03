@@ -200,6 +200,8 @@ getResource('http://localhost:3000/menu')
     });
 });
 
+
+   //not dynamic object \\
 // new MenuCard(
 //     "img/tabs/post.jpg",
 //     "post",
@@ -401,6 +403,10 @@ function showDot(){
     dots[slideIndex-1].style.opacity = '1';
 };
 
+function removeNotDigits(str){
+    return +str.replace(/\D/g, '');
+};
+
 dots.forEach(dot =>{
     dot.addEventListener('click', (e) =>{
         const slideTo = e.target.getAttribute('data-slide-to');
@@ -418,13 +424,13 @@ dots.forEach(dot =>{
 
 // dots end
 
-console.log(+width.slice(0, width.length - 2) * (slides.length - 1));
+console.log(removeNotDigits(width) * (slides.length - 1));
 
 nextSlide.addEventListener('click', () => {
-    if (offset == +width.slice(0, width.length - 2) * (slides.length - 1)){
+    if (offset == removeNotDigits(width) * (slides.length - 1)){
         offset = 0;
     } else {
-        offset += +width.slice(0, width.length - 2) ; 
+        offset += removeNotDigits(width) ; 
     }
     slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -441,9 +447,9 @@ nextSlide.addEventListener('click', () => {
 
 prevSlide.addEventListener('click', () => {
     if (offset == 0){
-        offset = +width.slice(0, width.length - 2) * (slides.length - 1);
+        offset = removeNotDigits(width) * (slides.length - 1);
     } else {
-        offset -= +width.slice(0, width.length - 2) ; 
+        offset -= removeNotDigits(width) ; 
     }
     slidesField.style.transform = `translateX(-${offset}px)`;
 
@@ -456,8 +462,82 @@ prevSlide.addEventListener('click', () => {
     showCurrent();
 
     showDot();
-    });
+});
 
+//calc
+
+// total = static + dynamic 
+
+const result = document.querySelector('.calculating__total span');
+let gender = 'female', height, weight, age, ratio = '1.375';
+
+function calcTotal(){
+    if(!gender || !height || !weight || !age || !ratio){
+        result.textContent = '_ _ _';
+        return;
+    }
+
+    if(gender === 'female'){
+        result.textContent = Math.round(ratio * (447.6 + (9.2 * weight) + (3.1 * height) - (4.3 * age)));
+    } else {
+        result.textContent = Math.round(ratio * (88.36 + (13.4 * weight ) + (4.8 * height) - (5.7 * age)));
+    }
+}
+
+function getStaticInfo(parentSelector, activeClass) {
+    const elements = document.querySelectorAll(`${parentSelector} div`);
+
+    console.log(elements);
+
+    elements.forEach(elem => {
+        elem.addEventListener('click', (event) => {
+            if (event.target.getAttribute('data-ratio')) {
+                ratio = +event.target.getAttribute('data-ratio');
+            } else {
+                gender = event.target.getAttribute('id');
+            }
+
+            elements.forEach(elem => {
+                elem.classList.remove(activeClass);
+            });
+
+            event.target.classList.add(activeClass);
+
+            calcTotal(); //click on buttons => dynamic result
+        });
+    });
+}
+
+function getDynamicInfo(selector) {
+    const input = document.querySelector(selector);
+
+    input.addEventListener('input', () => {
+        switch (input.getAttribute('id')) {
+            case 'height':
+                height = +input.value;
+                break;
+
+            case 'weight':
+                weight = +input.value;
+                break;
+
+            case 'age':
+                age = +input.value;
+                break;
+        };
+
+        calcTotal(); // changing inputs => changing total
+    });
+}
+    
+calcTotal();
+
+getStaticInfo('#gender', 'calculating__choose-item_active');
+getStaticInfo('.calculating__choose_big', 'calculating__choose-item_active');
+
+getDynamicInfo('#height');
+getDynamicInfo('#weight');
+getDynamicInfo('#age');
 
 
 });
